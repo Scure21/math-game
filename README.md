@@ -2,6 +2,12 @@
 
 A small mental-math trainer built with Expo. Drill addition, subtraction, multiplication, and division against the clock — the difficulty adapts as you get faster.
 
+| Image 1    | Image 2 |
+| -------- | ------- |
+|  <img width="1170" height="2532" alt="simulator_screenshot_AE169735-F9B1-440E-BF59-3A5CF2C2D7C3" src="https://github.com/user-attachments/assets/60763fab-9b0a-455b-a600-ba9e4ac98406" /> |   <img width="1170" height="2532" alt="Simulator Screenshot - iPhone 16e - 2026-05-26 at 16 52 09" src="https://github.com/user-attachments/assets/8ccb60ad-d82d-4ddc-a815-80c6e902852f" />|
+
+
+
 ## Game modes
 
 | Mode | Goal | Score |
