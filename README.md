@@ -30,26 +30,36 @@ All modes use the same adaptive generator: operand sizes start small (single dig
 
 ```
 src/
-├── app/
-│   ├── _layout.tsx          # root Stack (headerless)
-│   ├── play.tsx             # full-screen game loop + results
+├── app/                       # thin route files (expo-router)
+│   ├── _layout.tsx            # root Stack (headerless)
+│   ├── play.tsx               # → re-exports screens/play
 │   └── (tabs)/
-│       ├── _layout.tsx      # NativeTabs (Play / History)
-│       ├── index.tsx        # mode picker + best scores
-│       └── history.tsx      # last 10 rounds with timestamps
+│       ├── _layout.tsx        # NativeTabs (Play / History)
+│       ├── index.tsx          # → re-exports screens/PlayMenuScreen
+│       └── history.tsx        # → re-exports screens/HistoryScreen
+├── screens/                   # screen implementations live here
+│   ├── PlayMenuScreen.tsx     # mode picker + best scores
+│   ├── HistoryScreen.tsx      # last 10 rounds with timestamps
+│   └── play/                  # split-up game screen
+│       ├── index.tsx          # PlayScreen: effects + dispatch + layout
+│       ├── reducer.ts         # State, Action, reducer, initialState
+│       ├── constants.ts       # timings + survivalLimitMs
+│       ├── Hud.tsx            # per-mode HUD
+│       ├── InputDisplay.tsx
+│       └── ResultsView.tsx    # end-of-round screen
 ├── components/
-│   ├── number-pad.tsx       # on-screen 0–9 + ⌫ + ✓
+│   ├── number-pad.tsx         # on-screen 0–9 + ⌫ + ✓
 │   ├── themed-text.tsx
 │   └── themed-view.tsx
 ├── game/
-│   ├── problems.ts          # generator + nextDifficulty
-│   ├── storage.ts           # kv-store wrapper
-│   └── types.ts             # GameMode, Problem, RoundResult
+│   ├── problems.ts            # generator + nextDifficulty
+│   ├── storage.ts             # kv-store wrapper
+│   └── types.ts               # GameMode, Problem, RoundResult
 ├── constants/theme.ts
-└── hooks/                   # useTheme, useColorScheme
+└── hooks/                     # useTheme, useColorScheme
 ```
 
-The `play.tsx` screen is a single reducer — every digit press, submit, timeout, and finish flows through it, which keeps the game state easy to reason about.
+Files in `app/` only define the routing tree — actual screen code lives in `screens/`. The play screen is a single reducer: every digit press, submit, timeout, and finish flows through it, which keeps the game state easy to reason about.
 
 ## Getting started
 
