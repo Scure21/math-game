@@ -1,57 +1,77 @@
-# Welcome to your Expo app 👋
+# Math Sprint
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A small mental-math trainer built with Expo. Drill addition, subtraction, multiplication, and division against the clock — the difficulty adapts as you get faster.
 
-## Get started
+## Game modes
 
-1. Install dependencies
+| Mode | Goal | Score |
+| --- | --- | --- |
+| **60-second sprint** | Solve as many problems as you can in one minute. | Number correct |
+| **20-problem race** | Get through 20 problems as fast as possible. | Total time (+5s per wrong answer) |
+| **Survival** | Keep answering — the per-problem timer shrinks every 5 correct answers. 3 lives. | Longest streak |
 
-   ```bash
-   npm install
-   ```
+All modes use the same adaptive generator: operand sizes start small (single digit, ≤6×6) and grow toward two-digit operands and ≤15×15 multiplication as you keep answering quickly. Wrong answers and slow answers pull the difficulty back down.
 
-2. Start the app
+## What's inside
 
-   ```bash
-   npx expo start
-   ```
+- **Expo SDK 56** + **expo-router v56** with a file-based route tree.
+- **`expo-sqlite/kv-store`** for persistence (best score per mode + last 10 finished rounds).
+- **React 19 + React Compiler** — the codebase plays nicely with the new purity rules.
+- **react-native-reanimated** for the wrong-answer pill fade.
+- Targets iOS, Android, and Web from a single source tree.
 
-In the output, you'll find options to open the app in a
+## Project layout
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+src/
+├── app/
+│   ├── _layout.tsx          # root Stack (headerless)
+│   ├── play.tsx             # full-screen game loop + results
+│   └── (tabs)/
+│       ├── _layout.tsx      # NativeTabs (Play / History)
+│       ├── index.tsx        # mode picker + best scores
+│       └── history.tsx      # last 10 rounds with timestamps
+├── components/
+│   ├── number-pad.tsx       # on-screen 0–9 + ⌫ + ✓
+│   ├── themed-text.tsx
+│   └── themed-view.tsx
+├── game/
+│   ├── problems.ts          # generator + nextDifficulty
+│   ├── storage.ts           # kv-store wrapper
+│   └── types.ts             # GameMode, Problem, RoundResult
+├── constants/theme.ts
+└── hooks/                   # useTheme, useColorScheme
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+The `play.tsx` screen is a single reducer — every digit press, submit, timeout, and finish flows through it, which keeps the game state easy to reason about.
 
-### Other setup steps
+## Getting started
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npm install
+npm run ios      # or: npm run android, npm run web
+```
 
-## Learn more
+The first iOS/Android run will do a native build via `expo run:ios` / `expo run:android`. After that, `npm start` is enough for day-to-day work.
 
-To learn more about developing your project with Expo, look at the following resources:
+## How the wrong-answer feedback works
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+When you submit a wrong answer (or run out the per-problem timer in survival), a red pill briefly fades in showing the problem and its correct answer, e.g. `✗ 12 × 7 = 84`. The pill is positioned absolutely above the problem so it never blocks the number pad — the next problem is already up and you can keep typing.
 
-## Join the community
+## Persistence
 
-Join our community of developers creating universal apps.
+Best scores per mode and the most recent 10 finished rounds are stored locally via `expo-sqlite/kv-store` under the keys `math-game:best:v1:<mode>` and `math-game:history:v1`. There's no remote sync; deleting the app clears your stats.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-# math-game
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm start` | Start the Expo dev server |
+| `npm run ios` / `npm run android` / `npm run web` | Open a platform target |
+| `npm run lint` | Run `expo lint` |
+| `npx tsc --noEmit` | Typecheck without emitting |
+
+## Notes
+
+- This project pins **Expo SDK 56**. Before changing any Expo-related dependency, check [the SDK 56 docs](https://docs.expo.dev/versions/v56.0.0/).
+- Web requires the `metro.config.js` tweak that registers `.wasm` as an asset — without it the `expo-sqlite` worker fails to resolve on web bundling.
