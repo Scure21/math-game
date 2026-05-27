@@ -5,6 +5,8 @@ export type Problem = {
   b: number;
   op: Operation;
   answer: number;
+  /** Three answer options including `answer`, already shuffled. */
+  choices: number[];
 };
 
 export type GameMode = 'sprint' | 'race' | 'survival';

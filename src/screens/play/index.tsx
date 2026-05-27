@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { NumberPad, type PadValue } from '@/components/number-pad';
+import { ChoicePills } from '@/components/choice-pills';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { MaxContentWidth, Spacing } from '@/constants/theme';
@@ -20,7 +20,6 @@ import {
   survivalLimitMs,
 } from './constants';
 import { Hud } from './Hud';
-import { InputDisplay } from './InputDisplay';
 import { initialState, reducer } from './reducer';
 import { ResultsView } from './ResultsView';
 
@@ -86,7 +85,7 @@ export default function PlayScreen() {
     const limit = survivalLimitMs(state.correct);
     const elapsed = now - state.problemStartedAt;
     if (elapsed >= limit) {
-      dispatch({ type: 'submit', mode, now, timedOut: true });
+      dispatch({ type: 'submit', choice: null, mode, now, timedOut: true });
     }
   }, [mode, now, state.phase, state.problemStartedAt, state.correct]);
 
@@ -119,20 +118,12 @@ export default function PlayScreen() {
     })();
   }, [state.phase, state.finishedAt, state.roundStartedAt, state.correct, state.wrong, mode]);
 
-  const handlePad = useCallback(
-    (value: PadValue) => {
+  const handlePick = useCallback(
+    (choice: number) => {
       if (state.phase === 'finished') return;
-      const stamp = Date.now();
-      if (value === 'submit') {
-        if (state.input === '') return;
-        dispatch({ type: 'submit', mode, now: stamp });
-      } else if (value === 'delete') {
-        dispatch({ type: 'delete' });
-      } else {
-        dispatch({ type: 'append-digit', digit: value, now: stamp });
-      }
+      dispatch({ type: 'submit', choice, mode, now: Date.now() });
     },
-    [state.phase, state.input, mode],
+    [state.phase, mode],
   );
 
   if (state.phase === 'finished' && state.finishedAt !== null) {
@@ -167,15 +158,11 @@ export default function PlayScreen() {
               </Animated.View>
             )}
           </View>
-          <ThemedText style={styles.problem}>{formatProblem(state.problem)}</ThemedText>
-          <ThemedText style={styles.equals} themeColor="textSecondary">
-            =
-          </ThemedText>
-          <InputDisplay value={state.input} />
+          <ThemedText style={styles.problem}>{formatProblem(state.problem)} = ?</ThemedText>
         </View>
 
-        <View style={styles.padArea}>
-          <NumberPad onPress={handlePad} />
+        <View style={styles.choicesArea}>
+          <ChoicePills choices={state.problem.choices} onPick={handlePick} />
         </View>
 
         <Pressable onPress={() => router.replace('/')} style={styles.quitButton}>
@@ -229,13 +216,11 @@ const styles = StyleSheet.create({
     fontSize: 56,
     fontWeight: '600',
     lineHeight: 64,
+    textAlign: 'center',
   },
-  equals: {
-    fontSize: 32,
-    lineHeight: 36,
-  },
-  padArea: {
+  choicesArea: {
     paddingTop: Spacing.two,
+    paddingBottom: Spacing.two,
   },
   quitButton: {
     alignSelf: 'center',

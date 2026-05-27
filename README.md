@@ -16,7 +16,7 @@ A small mental-math trainer built with Expo. Drill addition, subtraction, multip
 | **20-problem race** | Get through 20 problems as fast as possible. | Total time (+5s per wrong answer) |
 | **Survival** | Keep answering — the per-problem timer shrinks every 5 correct answers. 3 lives. | Longest streak |
 
-All modes use the same adaptive generator: operand sizes start small (single digit, ≤6×6) and grow toward two-digit operands and ≤15×15 multiplication as you keep answering quickly. Wrong answers and slow answers pull the difficulty back down.
+All modes use the same adaptive generator: operand sizes start small (single digit, ≤6×6) and grow toward two-digit operands and ≤15×15 multiplication as you keep answering quickly. Wrong answers and slow answers pull the difficulty back down. Each problem gives you three answer pills — the correct one plus two close distractors (±1 / ±2, occasionally ±10) — so you can't just spot the outlier.
 
 ## What's inside
 
@@ -45,10 +45,9 @@ src/
 │       ├── reducer.ts         # State, Action, reducer, initialState
 │       ├── constants.ts       # timings + survivalLimitMs
 │       ├── Hud.tsx            # per-mode HUD
-│       ├── InputDisplay.tsx
 │       └── ResultsView.tsx    # end-of-round screen
 ├── components/
-│   ├── number-pad.tsx         # on-screen 0–9 + ⌫ + ✓
+│   ├── choice-pills.tsx       # three answer pills, auto-advance on tap
 │   ├── themed-text.tsx
 │   └── themed-view.tsx
 ├── game/
@@ -72,7 +71,7 @@ The first iOS/Android run will do a native build via `expo run:ios` / `expo run:
 
 ## How the wrong-answer feedback works
 
-When you submit a wrong answer (or run out the per-problem timer in survival), a red pill briefly fades in showing the problem and its correct answer, e.g. `✗ 12 × 7 = 84`. The pill is positioned absolutely above the problem so it never blocks the number pad — the next problem is already up and you can keep typing.
+When you pick a wrong answer (or run out the per-problem timer in survival), a red pill briefly fades in showing the problem and its correct answer, e.g. `✗ 12 × 7 = 84`. The pill is positioned absolutely above the problem so it never blocks the choice pills — the next problem is already up and you can keep tapping.
 
 ## Persistence
 

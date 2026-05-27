@@ -1,7 +1,7 @@
 import { formatProblem, generateProblem, nextDifficulty } from '@/game/problems';
 import type { GameMode, Problem } from '@/game/types';
 
-import { MAX_INPUT_LENGTH, RACE_PROBLEMS } from './constants';
+import { RACE_PROBLEMS } from './constants';
 
 export type Phase = 'playing' | 'finished';
 
@@ -10,7 +10,6 @@ export type WrongFeedback = { problemStr: string; expected: number; id: number }
 export type State = {
   phase: Phase;
   problem: Problem;
-  input: string;
   difficulty: number;
   correct: number;
   wrong: number;
@@ -23,9 +22,7 @@ export type State = {
 };
 
 export type Action =
-  | { type: 'append-digit'; digit: number; now: number }
-  | { type: 'delete' }
-  | { type: 'submit'; mode: GameMode; now: number; timedOut?: boolean }
+  | { type: 'submit'; choice: number | null; mode: GameMode; now: number; timedOut?: boolean }
   | { type: 'clear-feedback'; id: number }
   | { type: 'finish'; now: number };
 
@@ -33,7 +30,6 @@ export function initialState(now: number): State {
   return {
     phase: 'playing',
     problem: generateProblem(1),
-    input: '',
     difficulty: 1,
     correct: 0,
     wrong: 0,
@@ -50,17 +46,9 @@ export function reducer(state: State, action: Action): State {
   if (state.phase === 'finished') return state;
 
   switch (action.type) {
-    case 'append-digit': {
-      if (state.input.length >= MAX_INPUT_LENGTH) return state;
-      return { ...state, input: state.input + action.digit };
-    }
-    case 'delete': {
-      return { ...state, input: state.input.slice(0, -1) };
-    }
     case 'submit': {
       const elapsed = action.now - state.problemStartedAt;
-      const parsed = state.input === '' ? NaN : Number(state.input);
-      const isCorrect = !action.timedOut && parsed === state.problem.answer;
+      const isCorrect = !action.timedOut && action.choice === state.problem.answer;
       const newDifficulty = nextDifficulty(state.difficulty, isCorrect, elapsed);
       const newCorrect = state.correct + (isCorrect ? 1 : 0);
       const newWrong = state.wrong + (isCorrect ? 0 : 1);
@@ -80,7 +68,6 @@ export function reducer(state: State, action: Action): State {
         ...state,
         phase: shouldFinish ? 'finished' : 'playing',
         problem: shouldFinish ? state.problem : generateProblem(newDifficulty),
-        input: '',
         difficulty: newDifficulty,
         correct: newCorrect,
         wrong: newWrong,
